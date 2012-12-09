@@ -23,10 +23,10 @@ public class MusicDataCollection {
      */
     static int   numofpages = 800; 
     public static void main(String[] args) {
-        Caller.getInstance().setUserAgent("albara");
+        Caller.getInstance().setUserAgent("RawanMG");
     Caller.getInstance().setDebugMode(true);
    String key = "74e2bf6d43f85e4a5d3a89e6eee3fd7b"; //this is the key used in the Last.fm API examples
-    String user = "albara";
+    String user = "RawanMG";
     
      Vector<String> uniquetracks = new Vector<String>(); //to store the track name
      Vector<String> artists = new Vector<String>(); //to store the artist name
