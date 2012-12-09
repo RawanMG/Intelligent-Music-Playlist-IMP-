@@ -1,0 +1,97 @@
+/*
+ * To change this template, choose Tools | Templates
+ * and open the template in the editor.
+ */
+
+/**
+ *
+ * @author Rawan
+ */
+import java.io.File; 
+import java.util.Scanner; 
+import java.io.FileNotFoundException; 
+import java.util.Vector; 
+public class TestGenetics {
+    public static final int playlistsize = 15; 
+    public static final int populationsize = 5; 
+    public static final int filesize = 2680; 
+    
+    public static void main(String args[])
+    {
+     
+        Genetics test =  new Genetics(); 
+         Vector[] population = new Vector[populationsize];  //initial population an array of vectors  
+         for(int i=0; i<populationsize; i++)
+             population[i] = new Vector<Song>(); 
+         Vector<Song> tracks = new Vector<Song>(); 
+         
+         int[] top20 = new int[20]; //Top 20 playcounts (for testing purposes) 
+         
+         //fill the population with playlists from the file
+        try{
+         Scanner input = new Scanner(new File("musicdata.txt"));
+         while(input.hasNext()){
+             String line = input.nextLine(); 
+              
+             String title="" ; 
+             int intindex=0; 
+             for(int i=0; i<line.length(); i++)
+             {
+              if(Character.isDigit(line.charAt(i)))
+              {intindex = i;  
+              break; 
+              }
+              title+=line.charAt(i); 
+             }
+            tracks.add(new Song(title, line.charAt(intindex), line.charAt(intindex+2)));
+         }
+         System.out.println(tracks.size()); 
+        }catch(FileNotFoundException e){
+            System.out.println(e.getMessage()); 
+        }
+        //fill the population with random songs from tracks
+        for(int i =0; i<population.length; i++){
+            for(int j=0; j<playlistsize; j++){
+                int randomsong = (int)( tracks.size()*Math.random()); //select a random index/song 
+                population[i].add( tracks.remove(randomsong)); //add it to the population 
+            }
+        }
+        //print the population before optimization
+       for(int i=0; i<population.length; i++)
+       {
+         System.out.println("\nPlaylist " + (i+1)); 
+        for(int j=0; j<playlistsize; j++){
+           System.out.println( population[i].elementAt(j).toString()); 
+        }
+        
+       }
+       test.Genetic_Algorithm(population); //Optimize population
+       
+       //print the population after optimization 
+       for(int i=0; i<population.length; i++)
+       {
+        System.out.println("\nPlaylist " + (i+1)); 
+        for(int j=0; j<playlistsize; j++){
+           System.out.println( population[i].elementAt(j).toString()); 
+        }
+       
+       }
+    }//end main
+    public static void addToTopPC(int[] tpc, int pc){
+      int index=0; //the upper bound
+      //loop until you reach a value larger than pc
+      boolean enteredloop = false; //has room
+      for(; pc<tpc[index] && index<tpc.length; index++) 
+          enteredloop =true; 
+      
+      if(enteredloop)
+      //if the upper bound is larger than pc
+      if(pc != tpc[index]){
+        
+          for(int i=0; i<index; i++) 
+           tpc[i]= tpc[i+1]; //copy/push values
+          
+          tpc[index-1]= pc; //store the value of pc
+      }
+    }
+}
