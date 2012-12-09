@@ -1,0 +1,216 @@
+package musicdatacollection;
+
+/*
+ * To change this template, choose Tools | Templates
+ * and open the template in the editor.
+ */
+
+import de.umass.lastfm.*;
+import java.util.Vector;
+import java.io.FileWriter; 
+import java.io.BufferedWriter; 
+import java.io.IOException; 
+import java.util.Collection; 
+
+/**
+ *
+ * @author Rawan
+ */
+public class MusicDataCollection {
+
+    /**
+     * @param args the command line arguments
+     */
+    static int   numofpages = 800; 
+    public static void main(String[] args) {
+        Caller.getInstance().setUserAgent("albara");
+    Caller.getInstance().setDebugMode(true);
+   String key = "74e2bf6d43f85e4a5d3a89e6eee3fd7b"; //this is the key used in the Last.fm API examples
+    String user = "albara";
+    
+     Vector<String> uniquetracks = new Vector<String>(); //to store the track name
+     Vector<String> artists = new Vector<String>(); //to store the artist name
+    Vector<Integer> uniqueplaycount = new Vector<Integer>(); //to store the playcount
+    Vector<Integer> ulovedtracks = new Vector<Integer>(); //to store whether the track is loved or not
+    Vector<String> uniqueartist = new Vector<String>(); //to store the artist vs id(index)
+    
+    //Testing data 
+    /* Vector<String> uniquetrackstest = new Vector<String>(); //to store the track name
+     Vector<String> artiststest = new Vector<String>(); //to store the artist name
+    Vector<Integer> uniqueplaycounttest = new Vector<Integer>(); //to store the playcount
+    Vector<Integer> ulovedtrackstest = new Vector<Integer>(); //to store whether the track is loved or not
+    Vector<String> uniqueartisttest = new Vector<String>(); //to store the artist vs id(index) 
+    */
+   
+    //Collect Loved tracks  
+   Vector<String> lovedtracks = new Vector<String>(); //to store all the loved tracks
+     PaginatedResult<Track> loved; 
+      int c = 0;
+     for(int x=1; x<=numofpages; x++){
+   loved = User.getLovedTracks(user, x, key); 
+   
+   
+     for(Track track: loved){
+         
+       lovedtracks.add(track.getName());
+        c++; 
+    }
+     }
+    /* loved = User.getLovedTracks(user, 2, key); 
+       for(Track track: loved){
+        lovedtracks.add(track.getName());
+       c++; 
+    }*/
+     System.out.println(c); 
+     PaginatedResult<Track> tracks; 
+    for(int j=1; j<=numofpages; j++)
+    { //First 200 tracks (page 1) 
+     tracks = User.getRecentTracks(user, j, 100, key);
+          
+    for(Track track: tracks){
+        String t= track.getName(); 
+        //if the trakc is added to the vector increment the playcount
+        if(uniquetracks.contains(t))
+        {
+            int loc = uniquetracks.indexOf(t);//location of the track in the Vector
+            uniqueplaycount.set(loc, uniqueplaycount.elementAt(loc)+1); //increments the playcount
+        }
+        else //if the track is not in the vector add it with playcount = 1
+        { uniquetracks.addElement(t);
+          String artist = track.getArtist(); 
+          artists.add(artist);
+          uniqueplaycount.addElement(1);
+          if(!uniqueartist.contains(artist))
+             uniqueartist.addElement(artist); 
+          if (lovedtracks.contains(t))
+              ulovedtracks.add(1);
+          else
+              ulovedtracks.add(0); 
+        }
+    }
+    }
+   
+    
+    //Second 200 tracks (page 2) 
+   /* tracks = User.getRecentTracks(user, 2, 200, key);
+    
+       for(Track track: tracks){
+        String t= track.getName(); 
+        //if the trakc is added to the vector increment the playcount
+        if(uniquetracks.contains(t))
+        {
+            int loc = uniquetracks.indexOf(t);//location of the track in the Vector
+            uniqueplaycount.set(loc, uniqueplaycount.elementAt(loc)+1); //increments the playcount
+        }
+     else //if the track is not in the vector add it with playcount = 1
+        { uniquetracks.addElement(t);
+          String artist = track.getArtist(); 
+          artists.add(artist);
+          uniqueplaycount.addElement(1);
+          if(!uniqueartist.contains(artist))
+             uniqueartist.addElement(artist); 
+          if (lovedtracks.contains(t))
+              ulovedtracks.add(1);
+          else
+              ulovedtracks.add(0); 
+        }
+    }
+   //Third 200 tracks (page 3)
+           tracks = User.getRecentTracks(user, 3, 200, key);
+    
+       for(Track track: tracks){
+        String t= track.getName(); 
+        //if the trakc is added to the vector increment the playcount
+        if(uniquetracks.contains(t))
+        {
+            int loc = uniquetracks.indexOf(t);//location of the track in the Vector
+            uniqueplaycount.set(loc, uniqueplaycount.elementAt(loc)+1); //increments the playcount
+        }
+      else //if the track is not in the vector add it with playcount = 1
+        { uniquetracks.addElement(t);
+          String artist = track.getArtist(); 
+          artists.add(artist);
+          uniqueplaycount.addElement(1);
+          if(!uniqueartist.contains(artist))
+             uniqueartist.addElement(artist); 
+          if (lovedtracks.contains(t))
+              ulovedtracks.add(1);
+          else
+              ulovedtracks.add(0); 
+        }
+    } */
+  try{
+    FileWriter fw = new FileWriter("musicdata.txt"); //holds track data in the form ( track_title artist_index playcount loved_or_not) 
+    BufferedWriter bw = new BufferedWriter(fw); 
+       System.out.println("Music Data: " +uniquetracks.size()); 
+    for(int i =0; i<uniquetracks.size(); i++){
+        bw.write(uniquetracks.elementAt(i) + "  " +uniqueartist.indexOf(  artists.elementAt(i))+ " " + uniqueplaycount.elementAt(i) + "  " + ulovedtracks.elementAt(i)+ "\n" ); 
+    }
+    bw.close();
+    //50% of the data for Training
+     fw = new FileWriter("trainingmusicdata.txt");
+     bw = new BufferedWriter(fw); 
+       System.out.println("Training Data: " + uniquetracks.size()/2); 
+    for(int i =0; i<uniquetracks.size()/2; i++){
+        bw.write(uniqueartist.indexOf(  artists.elementAt(i))+ "," + uniqueplaycount.elementAt(i) + "," + ulovedtracks.elementAt(i) ); 
+        bw.write("\n"); 
+    }
+    bw.close();
+    //20% of the data for Validation
+        
+     fw = new FileWriter("validationmusicdata.txt");
+     bw = new BufferedWriter(fw); 
+        
+     int startv = uniquetracks.size()/2 ; //starting index for testing data
+     System.out.println("startv index " + startv); 
+     int sizev = (int) (uniquetracks.size()*(20.0/100.0)); //size of validation data 
+     System.out.println("Validation Data: " + sizev); //the size of the data is 
+     
+     
+    for(int i =startv; i<startv+ sizev; i++){
+        bw.write(uniqueartist.indexOf(  artists.elementAt(i))+ "," + uniqueplaycount.elementAt(i) + "," + ulovedtracks.elementAt(i) ); 
+        bw.write("\n"); 
+    }
+    bw.close();
+    //30% of the data for Testing
+     fw = new FileWriter("testingmusicdata.txt");
+     bw = new BufferedWriter(fw); 
+        
+     int start = startv + sizev; //starting index for testing data
+     int sizet = (int) (uniquetracks.size()*(30.0/100.0)); //size of testing data
+     System.out.println("Testing Data: " + sizet); //the size of the data is 
+     
+     
+    for(int i =start; i<uniquetracks.size(); i++){
+        bw.write(uniqueartist.indexOf(  artists.elementAt(i))+ "," + uniqueplaycount.elementAt(i) + "," + ulovedtracks.elementAt(i) ); 
+        bw.write("\n"); 
+    }
+    bw.close();
+    //a new file to map artist id to artist name
+    FileWriter fw2 = new FileWriter("artistdata.txt");
+    bw = new BufferedWriter(fw2); 
+    for(int i = 0; i<uniqueartist.size(); i++){
+        bw.write(i + " " + uniqueartist.elementAt(i)); 
+        bw.write("\n"); }
+    bw.close();
+    
+    bw = new BufferedWriter(new FileWriter("filesize.txt")); 
+    bw.write("Music Data: " +uniquetracks.size()); 
+     bw.write("\n");
+     bw.write("Training Data: " + uniquetracks.size()/2);
+       bw.write("\n");
+     bw.write("Testing Data: " + (uniquetracks.size()-start)); 
+     bw.close(); 
+    }catch(IOException e){
+      System.out.println(e.getMessage()); 
+    }catch(Exception e){
+      System.out.println(e.getMessage()); 
+      }
+    }
+
+}/*
+ * To change this template, choose Tools | Templates
+ * and open the template in the editor.
+ */
+
+
